@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.collections.plus
 import kotlin.math.max
 import kotlin.math.min
 
@@ -31,7 +30,8 @@ class CalculatorViewModel : ViewModel() {
     val state = _state.asStateFlow()
 
     private fun appendToHistory(s: CalculatorState): CalculatorState {
-        if (s.cur.result == null) return s
+        if (s.cur.result == null || s.history.lastOrNull()?.bsHistory == s.cur.input) return s
+
         return s.copy(
             history = s.history + CalculationState(
                 bsHistory = s.cur.input,
