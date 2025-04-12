@@ -40,13 +40,7 @@ class CalculatorViewModel : ViewModel() {
         )
     }
 
-    fun clear() = _state.update {
-        if (it.viewIdx != it.history.size) it.copy(viewIdx = it.history.size)
-        else {
-            val h = appendToHistory(it)
-            h.copy(viewIdx = h.history.size, cur = LocalState())
-        }
-    }
+    // History Movement
 
     fun backward() = _state.update {
         if (it.viewIdx <= 0) throw IllegalStateException("Can't go further back.")
@@ -62,6 +56,8 @@ class CalculatorViewModel : ViewModel() {
         assert(histIdx <= it.history.size && histIdx >= 0)
         it.copy(viewIdx = histIdx)
     }
+
+    // Cursor Movement
 
     fun cursorBackward() = _state.update {
         val cur = it.cur
@@ -89,6 +85,8 @@ class CalculatorViewModel : ViewModel() {
         it.copy(viewIdx = it.history.size, cur = cur.copy(cursorPos = 0))
     }
 
+    // Calculation
+
     fun eval() = _state.update {
         if (it.viewIdx == it.history.size)
             it.copy(cur = it.cur.copy(result = eval(it.cur.input).toString()))
@@ -98,6 +96,16 @@ class CalculatorViewModel : ViewModel() {
                 viewIdx = h.history.size,
                 cur = LocalState(input = h.history[h.viewIdx].bsHistory)
             )
+        }
+    }
+
+    // Text Manipulation
+
+    fun clear() = _state.update {
+        if (it.viewIdx != it.history.size) it.copy(viewIdx = it.history.size)
+        else {
+            val h = appendToHistory(it)
+            h.copy(viewIdx = h.history.size, cur = LocalState())
         }
     }
 
@@ -125,4 +133,5 @@ class CalculatorViewModel : ViewModel() {
             )
         )
     }
+
 }
