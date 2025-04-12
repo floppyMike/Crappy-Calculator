@@ -165,18 +165,40 @@ fun Keypad(vm: CalculatorViewModel, nav: NavHostController) {
                 }
             }
         }
-        item {
-            KeypadButton("HIST") {
-                nav.navigate(Screen.History.name)
-            }
-        }
         item { KeypadButton("BS") { vm.backspace() } }
 
         listOf(
-            Token.E, Token.PI, Token.FACT, Token.MOD, Token.SIN, Token.COS, Token.TAN, Token.ASIN,
-            Token.ACOS, Token.ATAN, Token.LN, Token.DIV, Token.MUL, Token.SUB, Token.ADD,
-            Token.LBRA, Token.RBRA, Token.SQRT, Token.EXP, Token._7, Token._8, Token._9, Token._0,
-            Token._4, Token._5, Token._6, Token.PERIOD, Token._1, Token._2, Token._3,
+            Token.E,
+            Token.PI,
+            Token.FACT,
+            Token.MOD,
+            Token.SIN,
+            Token.COS,
+            Token.TAN,
+            Token.ASIN,
+            Token.ACOS,
+            Token.ATAN,
+            Token.ABS,
+            Token.LOG,
+            Token.DIV,
+            Token.MUL,
+            Token.SUB,
+            Token.ADD,
+            Token.LBRA,
+            Token.RBRA,
+            Token.SQRT,
+            Token.EXP,
+            Token._7,
+            Token._8,
+            Token._9,
+            Token._0,
+            Token._4,
+            Token._5,
+            Token._6,
+            Token.PERIOD,
+            Token._1,
+            Token._2,
+            Token._3,
         ).forEach { btn ->
             item { KeypadButton(btn.toString()) { vm.input(btn) } }
         }

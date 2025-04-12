@@ -31,7 +31,10 @@ enum class Token {
     ATAN {
         override fun toString() = "atan"
     },
-    LN {
+    ABS {
+        override fun toString() = "abs"
+    },
+    LOG {
         override fun toString() = "log"
     },
     DIV {
