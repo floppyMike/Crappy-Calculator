@@ -3,8 +3,10 @@ package com.example.crappycalculator
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,13 +30,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -44,12 +53,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.crappycalculator.ui.theme.CrappyCalculatorTheme
 
-enum class Screen(val idx: Int) {
-    Calculator(idx = 0),
-    History(idx = 1),
+enum class Screen {
+    Calculator,
+    History,
 }
 
 class MainActivity : ComponentActivity() {
@@ -61,7 +71,10 @@ class MainActivity : ComponentActivity() {
                 val viewModel: CalculatorViewModel by viewModels()
                 val navController = rememberNavController()
 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    topBar = { TopBarDisplay(viewModel, navController) },
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
                     NavHost(
                         navController = navController,
                         startDestination = Screen.Calculator.name,
@@ -76,7 +89,7 @@ class MainActivity : ComponentActivity() {
                             Column(verticalArrangement = Arrangement.SpaceBetween) {
                                 InputDisplay(viewModel)
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Keypad(viewModel, navController)
+                                Keypad(viewModel)
                             }
                         }
                         composable(route = Screen.History.name) {
@@ -87,6 +100,51 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+//
+// Top Bar
+//
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBarDisplay(vm: CalculatorViewModel, nav: NavHostController) {
+    val context = LocalContext.current
+    val state by vm.state.collectAsState()
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.CreateDocument("text/plain")) {
+            it?.let {
+                context.contentResolver.openOutputStream(it)
+                    ?.use { out -> out.write(state.history.joinToString("\n").toByteArray()) }
+            }
+        }
+
+    val backStackEntry by nav.currentBackStackEntryAsState()
+    val currentScreen = Screen.valueOf(backStackEntry?.destination?.route ?: Screen.Calculator.name)
+
+    TopAppBar(
+        title = { Text(text = currentScreen.name) },
+        actions = {
+            OutlinedButton(onClick = {
+                launcher.launch("calculator_export.txt")
+            }) {
+                Text(text = "Export")
+            }
+            OutlinedButton(onClick = {
+                when (currentScreen) {
+                    Screen.History -> {
+                        nav.popBackStack(route = Screen.Calculator.name, inclusive = false)
+                    }
+
+                    Screen.Calculator -> {
+                        nav.navigate(Screen.History.name)
+                    }
+                }
+            }) {
+                Text(text = "History")
+            }
+        }
+    )
 }
 
 //
@@ -131,7 +189,7 @@ fun InputDisplay(vm: CalculatorViewModel) {
 }
 
 @Composable
-fun Keypad(vm: CalculatorViewModel, nav: NavHostController) {
+fun Keypad(vm: CalculatorViewModel) {
     val context = LocalContext.current
 
     LazyVerticalGrid(
