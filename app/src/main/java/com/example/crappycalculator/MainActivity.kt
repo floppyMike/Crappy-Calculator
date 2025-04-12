@@ -81,7 +81,7 @@ fun NumberDisplay(vm: CalculatorViewModel) {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = state.expression,
+                    text = getExpression(state.calculation, true),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(96.dp)
@@ -100,7 +100,6 @@ fun NumberDisplay(vm: CalculatorViewModel) {
 
 @Composable
 fun Keypad(vm: CalculatorViewModel) {
-    val state by vm.state.collectAsState()
     val context = LocalContext.current
 
     Grid {
@@ -115,10 +114,12 @@ fun Keypad(vm: CalculatorViewModel) {
         item { KeypadButton("BS") }
 
         listOf(
-            "e", "π", "!", "%", "sin", "cos", "tan", "asin", "acos", "atan", "log", "/", "*", "-",
-            "+", "(", ")", "sqrt", "^", "7", "8", "9", "0", "4", "5", "6", ".", "1", "2", "3",
+            Token.E, Token.PI, Token.FACT, Token.MOD, Token.SIN, Token.COS, Token.TAN, Token.ASIN,
+            Token.ACOS, Token.ATAN, Token.LN, Token.DIV, Token.MUL, Token.SUB, Token.ADD,
+            Token.LBRA, Token.RBRA, Token.SQRT, Token.EXP, Token._7, Token._8, Token._9, Token._0,
+            Token._4, Token._5, Token._6, Token.PERIOD, Token._1, Token._2, Token._3,
         ).forEach { btn ->
-            item { KeypadButtonNew(btn) { vm.input(btn) } }
+            item { KeypadButtonNew(btn.toString()) { vm.input(btn) } }
         }
 
         item {
