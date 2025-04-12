@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,14 +28,15 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import com.example.crappycalculator.ui.theme.CrappyCalculatorTheme
+import androidx.compose.runtime.getValue
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +44,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CrappyCalculatorTheme {
+                val viewModel: CalculatorViewModel by viewModels()
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Column(
                         verticalArrangement = Arrangement.SpaceBetween,
@@ -49,9 +52,9 @@ class MainActivity : ComponentActivity() {
                             .padding(innerPadding)
                             .fillMaxSize()
                     ) {
-                        NumberDisplay()
+                        NumberDisplay(viewModel)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Keypad()
+                        Keypad(viewModel)
                     }
                 }
             }
@@ -60,7 +63,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NumberDisplay() {
+fun NumberDisplay(vm: CalculatorViewModel) {
+    val state by vm.state.collectAsState()
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -76,7 +81,7 @@ fun NumberDisplay() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = LoremIpsum().values.first(),
+                    text = state.expression,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(96.dp)
@@ -84,7 +89,7 @@ fun NumberDisplay() {
                 )
                 HorizontalDivider(thickness = 2.dp)
                 Text(
-                    text = "0",
+                    text = state.result,
                     textAlign = TextAlign.Right,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -94,48 +99,49 @@ fun NumberDisplay() {
 }
 
 @Composable
-fun Keypad() {
+fun Keypad(vm: CalculatorViewModel) {
+    val state by vm.state.collectAsState()
+    val context = LocalContext.current
+
     Grid {
-        item { KeypadButton("<-") }
+        item { KeypadButtonNew("<-") { vm.cursorBack() } }
         item { KeypadButton("->") }
         item { KeypadButton("|<-") }
         item { KeypadButton("->|") }
-        item { KeypadButton("C") }
+        item { KeypadButtonNew("C") { vm.clear() } }
         item { KeypadButton("BCK") }
         item { KeypadButton("FWD") }
         item { KeypadButton("HIST") }
         item { KeypadButton("BS") }
-        item { KeypadButton("e") }
-        item { KeypadButton("pi") }
-        item { KeypadButton("!") }
-        item { KeypadButton("%") }
-        item { KeypadButton("sin") }
-        item { KeypadButton("cos") }
-        item { KeypadButton("tan") }
-        item { KeypadButton("asin") }
-        item { KeypadButton("acos") }
-        item { KeypadButton("atan") }
-        item { KeypadButton("log") }
-        item { KeypadButton("/") }
-        item { KeypadButton("*") }
-        item { KeypadButton("-") }
-        item { KeypadButton("+") }
-        item { KeypadButton("(") }
-        item { KeypadButton(")") }
-        item { KeypadButton("sqrt") }
-        item { KeypadButton("^") }
-        item { KeypadButton("7") }
-        item { KeypadButton("8") }
-        item { KeypadButton("9") }
-        item { KeypadButton("0") }
-        item { KeypadButton("4") }
-        item { KeypadButton("5") }
-        item { KeypadButton("6") }
-        item { KeypadButton(".") }
-        item { KeypadButton("1") }
-        item { KeypadButton("2") }
-        item { KeypadButton("3") }
-        item { KeypadButton("=") }
+
+        listOf(
+            "e", "π", "!", "%", "sin", "cos", "tan", "asin", "acos", "atan", "log", "/", "*", "-",
+            "+", "(", ")", "sqrt", "^", "7", "8", "9", "0", "4", "5", "6", ".", "1", "2", "3",
+        ).forEach { btn ->
+            item { KeypadButtonNew(btn) { vm.input(btn) } }
+        }
+
+        item {
+            KeypadButtonNew("=") {
+                try {
+                    vm.eval()
+                } catch (e: Exception) {
+                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun KeypadButtonNew(text: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        shape = RectangleShape,
+        colors = ButtonDefaults.outlinedButtonColors(),
+        modifier = Modifier.border(1.dp, Color.Gray)
+    ) {
+        Text(text = text)
     }
 }
 
