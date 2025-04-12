@@ -58,6 +58,11 @@ class CalculatorViewModel : ViewModel() {
         it.copy(viewIdx = it.viewIdx + 1)
     }
 
+    fun goto(histIdx: Int) = _state.update {
+        assert(histIdx <= it.history.size && histIdx >= 0)
+        it.copy(viewIdx = histIdx)
+    }
+
     fun cursorBackward() = _state.update {
         val cur = it.cur
         it.copy(

@@ -58,4 +58,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation(libs.exp4j)
+    implementation(libs.androidx.navigation.compose)
 }

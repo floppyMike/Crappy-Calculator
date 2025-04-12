@@ -6,7 +6,12 @@ import net.objecthunter.exp4j.operator.Operator
 data class CalculationState(
     val bsHistory: List<Token>,
     val result: String,
-)
+) {
+    override fun toString(): String {
+        val expr = getExpression(this.bsHistory, null)
+        return "$expr = $result"
+    }
+}
 
 fun getExpression(tokens: List<Token>, cursor: Int?): String {
     val exprBuilder = StringBuilder()
