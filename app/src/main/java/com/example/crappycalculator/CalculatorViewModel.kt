@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import net.objecthunter.exp4j.ExpressionBuilder
 import net.objecthunter.exp4j.operator.Operator
 import kotlin.math.max
+import kotlin.math.min
 
 fun String.insertStrAtIndex(str: String, index: Int) =
     this.substring(0, index) + str + this.substring(index)
@@ -30,16 +31,35 @@ class CalculatorViewModel : ViewModel() {
         _state.value = CalculatorState()
     }
 
+    fun cursorBackward() {
+        val self = _state.value
+        cursorMov(max(0, self.cursorPos - 1))
+    }
+
+    fun cursorForward() {
+        val self = _state.value
+        cursorMov(min(self.bsHistory.size, self.cursorPos + 1))
+    }
+
+    fun cursorFront() {
+        val self = _state.value
+        cursorMov(self.bsHistory.size)
+    }
+
     fun cursorBack() {
         val self = _state.value
+        cursorMov(0)
+    }
 
+    private fun cursorMov(newPos: Int) {
+        val self = _state.value
         val oldPos = self.cursorPos
-        val newPos = max(0, self.cursorPos - 1)
-        val oldPosStr = self.backspaceHistory.take(oldPos).sum()
-        val newPosStr = self.backspaceHistory.take(newPos).sum()
+
+        val oldPosStr = self.bsHistory.take(oldPos).sum()
+        val newPosStr = self.bsHistory.take(newPos).sum()
 
         val noCursorStr =
-            if (oldPos == 0 || oldPos == self.backspaceHistory.size ||
+            if (oldPos == 0 || oldPos == self.bsHistory.size ||
                 (self.expression[oldPosStr + 1].isDigit()
                         && self.expression[oldPosStr - 1].isDigit())
             )
@@ -48,7 +68,7 @@ class CalculatorViewModel : ViewModel() {
                 self.expression.setCharAtIndex(' ', oldPosStr)
 
         val newCursorStr =
-            if (newPos == 0 || newPos == self.backspaceHistory.size ||
+            if (newPos == 0 || newPos == self.bsHistory.size ||
                 (noCursorStr[newPosStr].isDigit()
                         && noCursorStr[newPosStr - 1].isDigit())
             )
@@ -86,17 +106,20 @@ class CalculatorViewModel : ViewModel() {
 
     fun input(digit: String) {
         val self = _state.value
-        val strCursorPos = self.backspaceHistory.take(self.cursorPos).sum()
-        val doSpace = self.backspaceHistory.isEmpty() || self.expression[strCursorPos - 1].isDigit()
+        val strCursorPos = self.bsHistory.take(self.cursorPos).sum()
+
+        val isDigit = digit.length == 1 && digit[0].isDigit()
+        val wasDigit = self.bsHistory.isEmpty() || self.expression[strCursorPos - 1].isDigit()
+        val doSpace = isDigit && wasDigit
         val d = if (doSpace) digit else " $digit"
 
         val expr = self.expression.insertStrAtIndex(d, strCursorPos)
-        val bs = self.backspaceHistory + d.length
+        val bs = self.bsHistory + d.length
         val cursorPos = self.cursorPos + 1
 
         _state.value = self.copy(
             expression = expr,
-            backspaceHistory = bs,
+            bsHistory = bs,
             cursorPos = cursorPos,
         )
     }

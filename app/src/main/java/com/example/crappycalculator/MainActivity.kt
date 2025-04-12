@@ -104,10 +104,10 @@ fun Keypad(vm: CalculatorViewModel) {
     val context = LocalContext.current
 
     Grid {
-        item { KeypadButtonNew("<-") { vm.cursorBack() } }
-        item { KeypadButton("->") }
-        item { KeypadButton("|<-") }
-        item { KeypadButton("->|") }
+        item { KeypadButtonNew("<-") { vm.cursorBackward() } }
+        item { KeypadButtonNew("->") { vm.cursorForward() } }
+        item { KeypadButtonNew("|<-") { vm.cursorBack() } }
+        item { KeypadButtonNew("->|") { vm.cursorFront() } }
         item { KeypadButtonNew("C") { vm.clear() } }
         item { KeypadButton("BCK") }
         item { KeypadButton("FWD") }
