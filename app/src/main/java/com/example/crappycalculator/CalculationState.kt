@@ -1,26 +1,27 @@
 package com.example.crappycalculator
 
+import com.example.crappycalculator.Token
 import net.objecthunter.exp4j.ExpressionBuilder
 import net.objecthunter.exp4j.operator.Operator
 
 data class CalculationState(
-    val cursorPos: Int = 0,
-    val bsHistory: List<Token> = emptyList(),
+    val bsHistory: List<Token>,
+    val result: String,
 )
 
-fun getExpression(self: CalculationState, cursor: Boolean): String {
+fun getExpression(tokens: List<Token>, cursor: Int?): String {
     val exprBuilder = StringBuilder()
 
     var wasDigit = false
     var wasLog = false
-    self.bsHistory.forEachIndexed { i, v ->
+    tokens.forEachIndexed { i, v ->
         val tokenStr = v.toString()
         val isDigit = tokenStr.length == 1 && tokenStr[0].isDigit()
         val isLog = v == Token.LN
         val isE = v == Token.E
 
         exprBuilder.append(
-            if (cursor && self.cursorPos == i) "|$tokenStr"
+            if (cursor == i) "|$tokenStr"
             else if (i == 0 || wasDigit && isDigit || wasLog && (isDigit || isE)) tokenStr
             else " $tokenStr"
         )
@@ -29,13 +30,13 @@ fun getExpression(self: CalculationState, cursor: Boolean): String {
         wasLog = isLog
     }
 
-    if (cursor && self.cursorPos == self.bsHistory.size) exprBuilder.append('|')
+    if (cursor == tokens.size) exprBuilder.append('|')
 
     return exprBuilder.toString()
 }
 
-fun eval(self: CalculationState): Double {
-    val expr = getExpression(self, false)
+fun eval(tokens: List<Token>): Double {
+    val expr = getExpression(tokens, null)
 
     val factorial = object : Operator("!", 1, true, PRECEDENCE_POWER + 1) {
         override fun apply(vararg args: Double): Double {

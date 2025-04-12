@@ -65,6 +65,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NumberDisplay(vm: CalculatorViewModel) {
     val state by vm.state.collectAsState()
+    val (input, cursorPos, result) = if (state.viewIdx == state.history.size) Triple(
+        state.cur.input,
+        state.cur.cursorPos,
+        state.cur.result ?: "---"
+    ) else {
+        val hist = state.history[state.viewIdx]
+        Triple(hist.bsHistory, null, hist.result)
+    }
 
     Box(
         modifier = Modifier
@@ -81,7 +89,7 @@ fun NumberDisplay(vm: CalculatorViewModel) {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = getExpression(state.calculation, true),
+                    text = getExpression(input, cursorPos),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(96.dp)
@@ -89,7 +97,7 @@ fun NumberDisplay(vm: CalculatorViewModel) {
                 )
                 HorizontalDivider(thickness = 2.dp)
                 Text(
-                    text = state.result,
+                    text = result,
                     textAlign = TextAlign.Right,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -108,10 +116,26 @@ fun Keypad(vm: CalculatorViewModel) {
         item { KeypadButtonNew("|<-") { vm.cursorBack() } }
         item { KeypadButtonNew("->|") { vm.cursorFront() } }
         item { KeypadButtonNew("C") { vm.clear() } }
-        item { KeypadButton("BCK") }
-        item { KeypadButton("FWD") }
+        item {
+            KeypadButtonNew("BCK") {
+                try {
+                    vm.backward()
+                } catch (e: IllegalStateException) {
+                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        item {
+            KeypadButtonNew("FWD") {
+                try {
+                    vm.forward()
+                } catch (e: IllegalStateException) {
+                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
         item { KeypadButton("HIST") }
-        item { KeypadButton("BS") }
+        item { KeypadButtonNew("BS") { vm.backspace() } }
 
         listOf(
             Token.E, Token.PI, Token.FACT, Token.MOD, Token.SIN, Token.COS, Token.TAN, Token.ASIN,
