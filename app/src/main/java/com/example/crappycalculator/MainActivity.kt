@@ -208,7 +208,11 @@ fun Keypad(vm: CalculatorViewModel, nav: NavHostController) {
                 try {
                     vm.eval()
                 } catch (e: Exception) {
-                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        e.message ?: "Something is wrong with the expression.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
