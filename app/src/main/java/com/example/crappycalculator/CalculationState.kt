@@ -20,8 +20,8 @@ fun getExpression(tokens: List<Token>, cursor: Int?): String {
     var wasLog = false
     tokens.forEachIndexed { i, v ->
         val tokenStr = v.toString()
-        val isDigit = tokenStr.length == 1 && tokenStr[0].isDigit()
-        val isLog = v == Token.LN
+        val isDigit = tokenStr.length == 1 && (tokenStr[0].isDigit() || tokenStr[0] == '.')
+        val isLog = v == Token.LOG
 
         exprBuilder.append(
             if (cursor == i) "|$tokenStr"
