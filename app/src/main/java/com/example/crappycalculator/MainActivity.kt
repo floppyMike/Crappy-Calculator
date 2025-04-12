@@ -225,9 +225,10 @@ fun KeypadButton(text: String, onClick: () -> Unit) {
         onClick = onClick,
         shape = RectangleShape,
         colors = ButtonDefaults.outlinedButtonColors(),
+        contentPadding = PaddingValues(0.dp),
         modifier = Modifier.border(1.dp, Color.Gray)
     ) {
-        Text(text = text)
+        Text(text = text, maxLines = 1)
     }
 }
 
