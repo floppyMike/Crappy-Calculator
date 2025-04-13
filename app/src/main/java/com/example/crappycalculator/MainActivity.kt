@@ -264,7 +264,7 @@ fun Keypad(vm: CalculatorViewModel) {
                 } catch (e: Exception) {
                     Toast.makeText(
                         context,
-                        e.message ?: "Something is wrong with the expression.",
+                        "Error: ${e.message ?: "Something is wrong with the expression"}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
