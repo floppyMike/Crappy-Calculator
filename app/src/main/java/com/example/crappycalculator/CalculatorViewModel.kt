@@ -89,6 +89,9 @@ class CalculatorViewModel : ViewModel() {
 
     fun eval() = _state.update {
         if (it.viewIdx == it.history.size)
+            // This could be problematic for larger expressions due to it running on the GUI Thread,
+            // however tests show that it doesn't take up really any time. Maybe someday in the
+            // future :)
             it.copy(cur = it.cur.copy(result = eval(it.cur.input).toString()))
         else {
             val h = appendToHistory(it)
